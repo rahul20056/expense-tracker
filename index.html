@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-y+ULtcomhf73U6ELkabITK1PkNB1vkSKeHPy47VBeQg='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-fvlvrEF0Ti/pxaEO9ISvUpojb6/Bpu4i0g2ouilRf0U='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Expenses"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Expense Tracker</title>
@@ -170,7 +170,8 @@ function rGrp(){const n=id=>S.items.filter(i=>i.g===id).length;
  $('#grp').innerHTML=`<div class="cols"><div class="card"><h2>New group</h2><div class="fg"><div><label>Name</label><input id="gn" placeholder="Fruits, Banana, Robusta…"></div><div><label>Inside</label><select id="gp">${opts(gpl)}</select></div><button class="btn" data-a="addG">Add group</button></div><p class="hint">Groups nest as deep as you like (Food › Fruits › Banana › Robusta). Reports roll every expense up through all its parent groups, and you can drill down level by level.</p></div><div class="card"><h2>Your groups</h2>${tr(null)||'<div class="empty">No groups yet</div>'}<p class="hint">Deleting a group moves its sub-groups, items and expenses up to its parent.</p></div></div>`}
 A.addG=()=>{const n=$('#gn').value.trim();if(!n)return;gpl=$('#gp').value;S.groups.push({id:uid(),name:n,p:gpl||null});save();rGrp()};
 A.edG=v=>{eg=v;rGrp();$('#rn').focus()};A.rnG=v=>{const n=$('#rn').value.trim();if(n)grp(v).name=n;eg=null;save();rGrp()};
-A.delG=id=>{const g=grp(id),p=g.p||null;S.groups.forEach(x=>{if(x.p===id)x.p=p});S.items.forEach(i=>{if(i.g===id)i.g=p});S.exp.forEach(e=>{if(e.cat===id)e.cat=p});S.groups=S.groups.filter(x=>x.id!==id);if(cur===id)cur=p;save();rGrp()};
+const _delG=id=>{const g=grp(id),p=g.p||null;S.groups.forEach(x=>{if(x.p===id)x.p=p});S.items.forEach(i=>{if(i.g===id)i.g=p});S.exp.forEach(e=>{if(e.cat===id)e.cat=p});S.groups=S.groups.filter(x=>x.id!==id);if(cur===id)cur=p;save();rGrp()};
+A.delG=id=>{const g=grp(id);if(g)ask(`Delete the group "${g.name}"? Its sub-groups, items and expenses move up to the parent group.`,()=>_delG(id))};
 
 const iRows=()=>{const q=($('#iS')?.value||'').toLowerCase(),l=S.items.filter(i=>i.name.toLowerCase().includes(q)||path(i.g).toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
  return'<tr><th>Item</th><th>Group</th><th>Unit</th><th></th></tr>'+(l.map(i=>`<tr><td>${esc(i.name)}</td><td>${esc(path(i.g))}</td><td>${UL[i.un]}</td><td><button class="btn sec sm" data-a="edI" data-v="${i.id}">Edit</button> <button class="btn dg sm" data-a="delI" data-v="${i.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No items</td></tr>')};
@@ -178,7 +179,8 @@ function rItm(){const i=itm(ei)||{};$('#itm').innerHTML=`<div class="cols"><div 
  <div class="card"><div class="row"><h2 class="sp" style="margin:0">Saved items (${S.items.length})</h2><input id="iS" placeholder="Search…" style="width:150px"></div><div class="scroll" style="margin-top:10px"><table id="iT">${iRows()}</table></div></div></div>`}
 A.saveI=()=>{const n=$('#iN').value.trim();if(!n)return toast('Enter an item name');igl=$('#iG').value;const o={name:n,g:igl||null,un:$('#iU').value};if(ei)Object.assign(itm(ei),o);else S.items.push({id:uid(),...o});ei=null;save();rItm();toast('Item saved')};
 A.edI=v=>{ei=v;rItm();scrollTo(0,0)};A.cnI=()=>{ei=null;rItm()};
-A.delI=id=>{const i=itm(id);S.exp.forEach(e=>{if(e.item===id){e.cat=i.g||null;e.nm=i.name;delete e.item}});S.items=S.items.filter(x=>x.id!==id);save();rItm()};
+const _delI=id=>{const i=itm(id);S.exp.forEach(e=>{if(e.item===id){e.cat=i.g||null;e.nm=i.name;delete e.item}});S.items=S.items.filter(x=>x.id!==id);save();rItm()};
+A.delI=id=>{const i=itm(id);if(i)ask(`Delete the item "${i.name}"? Its past expenses stay in your records.`,()=>_delI(id))};
 
 function rLog(){const t=today(),mo=S.exp.filter(e=>e.date.startsWith(t.slice(0,7))),rc=S.exp.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id>a.id?1:-1).slice(0,12);
  const rI=[...new Set(S.exp.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id>a.id?1:-1).map(e=>e.item).filter(x=>x&&itm(x)))].slice(0,6);
@@ -199,11 +201,12 @@ A.addE=()=>{const i=itm($('#lI').value);if(!i)return toast('Choose an item first
  const q=+$('#lq').value,e={id:uid(),amt:a,date:$('#ld').value||today(),mode:lm,note:$('#ln').value.trim(),item:i.id,nm:i.name,cat:i.g||null};
  if(q>0){const[f,m]=U[$('#lu').value];e.f=f;e.q=q*m}
  ld=e.date;S.exp.push(e);save();rLog();toast('Expense saved')};
-A.del=id=>{S.exp=S.exp.filter(e=>e.id!==id);save();render()};C.lI=lSync;
+const _del=id=>{S.exp=S.exp.filter(e=>e.id!==id);save();render()};
+A.del=id=>{const e=S.exp.find(x=>x.id===id);if(e)ask(`Delete this expense (${elabel(e)}, ${fm(e.amt)} on ${e.date})?`,()=>_del(id))};C.lI=lSync;
 
 function rRec(){if(cur&&!grp(cur))cur=null;const ex=fl(),tot=sum(ex),cash=sum(ex.filter(e=>e.mode==='cash')),bank=tot-cash,r=range(),nd=new Set(ex.map(e=>e.date)).size,nav=rMode!=='all'&&rMode!=='custom';
  let h=`<div class="card"><div class="row"><div><label>View</label><select data-c="rM">${['day','week','month','year','all','custom'].map(m=>`<option value="${m}"${m===rMode?' selected':''}>${m[0].toUpperCase()+m.slice(1)}</option>`).join('')}</select></div>${rMode==='custom'?`<div><label>From</label><input type="date" data-c="cf" value="${cf}"></div><div><label>To</label><input type="date" data-c="cu" value="${cu}"></div>`:rMode!=='all'?`<div><label>Date</label><input type="date" data-c="rA" value="${anchor}"></div>`:''}<div class="sp"></div>${nav?'<button class="btn sec sm" data-a="pv">‹ Prev</button><button class="btn sec sm" data-a="nx">Next ›</button>':''}</div>
- <div class="seg" style="margin:12px 0 0">${[['all','All modes'],['cash',ic('cash')+'Cash'],['bank',ic('bank')+'Bank']].map(x=>`<button data-a="mf" data-v="${x[0]}" class="${mf===x[0]?'on':''}">${x[1]}</button>`).join('')}</div><details class="dl" open style="margin-top:14px"><summary>Downloads and backup</summary><div class="row" style="margin-top:12px"><button class="btn sec sm" data-a="xDet">${ic('down')}Entries (CSV)</button><button class="btn sec sm" data-a="xGrp">${ic('down')}Group totals (CSV)</button><button class="btn sec sm" data-a="xItm">${ic('down')}Item totals (CSV)</button><button class="btn sec sm" data-a="xCat">${ic('down')}Items list (CSV)</button><button class="btn sec sm" data-a="xJson">${ic('down')}Backup everything (JSON)</button><label class="btn sec sm">${ic('up')}Restore backup<input type="file" accept=".json,application/json" data-c="xImp" hidden></label><button class="btn sec sm" data-a="xRep">${ic('down')}Report (print / PDF)</button></div><p class="hint">CSV files and the report follow the period and cash/bank filter above. The JSON backup always contains everything.</p></details></div>
+ <div class="seg" style="margin:12px 0 0">${[['all','All modes'],['cash',ic('cash')+'Cash'],['bank',ic('bank')+'Bank']].map(x=>`<button data-a="mf" data-v="${x[0]}" class="${mf===x[0]?'on':''}">${x[1]}</button>`).join('')}</div><details class="dl"${bkOpen?' open':''} style="margin-top:14px"><summary>Backup and restore</summary><div class="row" style="margin-top:12px"><button class="btn sec sm" data-a="xJson">${ic('down')}Backup everything (JSON)</button><label class="btn sec sm">${ic('up')}Restore backup<input type="file" accept=".json,application/json" data-c="xImp" hidden></label></div><p class="hint">The backup file always contains all your data. Restoring replaces everything currently on this device.</p></details></div>
  <div class="seg"><button data-a="rv" data-v="sum" class="${rv==='sum'?'on':''}">Summary</button><button data-a="rv" data-v="days" class="${rv==='days'?'on':''}">Days</button></div><h2>${r?(r[0]===r[1]?r[0]:r[0]+' → '+r[1]):'All time'}</h2>`;
  if(!ex.length)h+='<div class="card empty">No expenses in this view</div>';
  else if(rv==='days'){const m={};ex.forEach(e=>(m[e.date]=m[e.date]||[]).push(e));h+=Object.keys(m).sort().reverse().map(d=>{const l=m[d];return`<details class="card day"><summary><b>${d}</b><span>${fm(sum(l))}</span><small><i class="cb c">${ic('cash')}${fm(sum(l.filter(e=>e.mode==='cash')))}</i><i class="cb b">${ic('bank')}${fm(sum(l.filter(e=>e.mode==='bank')))}</i></small></summary><div>${l.map(erow).join('')}</div></details>`}).join('')}
@@ -224,35 +227,15 @@ function rRec(){if(cur&&!grp(cur))cur=null;const ex=fl(),tot=sum(ex),cash=sum(ex
  $('#rec').innerHTML=h}
 A.xAll=v=>$$('#gt details').forEach(d=>d.open=v==='1');A.pv=()=>{step(-1);rRec()};A.nx=()=>{step(1);rRec()};A.mf=v=>{mf=v;rRec()};A.rv=v=>{rv=v;rRec()};A.dr=v=>{cur=v||null;rRec()};
 C.rM=v=>{rMode=v;rRec()};C.rA=v=>{anchor=v||today();rRec()};C.cf=v=>{cf=v||cf;rRec()};C.cu=v=>{cu=v||cu;rRec()};
-/* ---------- downloads, report and backup ---------- */
+/* ---------- backup and restore ---------- */
+let bkOpen=true;try{bkOpen=!matchMedia('(max-width:760px)').matches}catch(e){}
+document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('dl'))bkOpen=e.target.open},true);
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Downloaded '+name)}
-const csvCell=c=>{let t=String(c??'');if(typeof c==='string'&&/^[=+\-@\t\r]/.test(t))t="'"+t;return /[",\n]/.test(t)?`"${t.replace(/"/g,'""')}"`:t};
-const csv=rows=>'\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
-const stamp=()=>today(),r2=n=>Math.round((n||0)*100)/100,cashOf=l=>sum(l.filter(e=>e.mode==='cash'));
-const byLabel=l=>{const m={};l.forEach(e=>(m[elabel(e)+'\u0001'+(ecat(e)||'')]=m[elabel(e)+'\u0001'+(ecat(e)||'')]||[]).push(e));return Object.values(m)};
-const perUnit=l=>{const q=l.filter(e=>e.q),f=q[0]&&q[0].f;if(!f||q.some(e=>e.f!==f))return['',''];const Q=q.reduce((s,e)=>s+e.q,0),A=sum(q);return[r2(f==='n'?A/Q:A/Q*1000),f==='w'?'kg':f==='v'?'L':'unit']};
-function grpRows(ex){const out=[],walk=(p,d)=>kids(p).forEach(g=>{const ids=desc(g.id),l=ex.filter(e=>ids.includes(ecat(e)));if(l.length)out.push({name:path(g.id),d,l});walk(g.id,d+1)});walk(null,0);
- byLabel(ex.filter(e=>ecat(e)===null)).forEach(l=>out.push({name:elabel(l[0])+' (no group)',d:0,l}));return out}
-const itemRowsAll=ex=>byLabel(ex).map(l=>({name:elabel(l[0]),g:path(ecat(l[0])),l})).sort((a,b)=>sum(b.l)-sum(a.l));
-const periodLabel=()=>{const r=range();return(r?(r[0]===r[1]?r[0]:r[0]+' to '+r[1]):'All time')+(mf==='all'?'':' · '+mf+' only')};
-A.xDet=()=>{const L=fl().sort((a,b)=>a.date<b.date?-1:1);dl(`expenses-${stamp()}.csv`,csv([['Date','Item','Group','Quantity','Unit','Amount','Mode','Note'],...L.map(e=>{const q=e.q?fq(e.q,e.f).split(' '):['',''];return[e.date,elabel(e),path(ecat(e)),q[0],q[1],r2(e.amt),e.mode,e.note||'']})]),'text/csv')};
-A.xGrp=()=>{const ex=fl(),tot=sum(ex)||1;dl(`group-totals-${stamp()}.csv`,csv([['Group','Level','Quantity','Cash','Bank','Total','Share %'],...grpRows(ex).map(x=>[x.name,x.d+1,qtys(x.l),r2(cashOf(x.l)),r2(sum(x.l)-cashOf(x.l)),r2(sum(x.l)),r2(sum(x.l)/tot*100)])]),'text/csv')};
-A.xItm=()=>{dl(`item-totals-${stamp()}.csv`,csv([['Item','Group','Quantity','Cash','Bank','Total','Avg price','Per'],...itemRowsAll(fl()).map(x=>[x.name,x.g,qtys(x.l),r2(cashOf(x.l)),r2(sum(x.l)-cashOf(x.l)),r2(sum(x.l)),...perUnit(x.l)])]),'text/csv')};
-A.xCat=()=>dl(`items-list-${stamp()}.csv`,csv([['Item','Group','Counted in'],...S.items.map(i=>[i.name,path(i.g),UL[i.un]])]),'text/csv');
+const stamp=()=>today();
 A.xJson=()=>dl(`expense-tracker-backup-${stamp()}.json`,JSON.stringify(S,null,2),'application/json');
 C.xImp=(v,t)=>{const f=t.files[0];if(!f)return;if(f.size>3e7){t.value='';return toast('That file is too large')}const rd=new FileReader();
  rd.onload=()=>{try{const j=JSON.parse(rd.result);if(![j.groups,j.items,j.exp].every(Array.isArray))throw 0;
   ask('Replace all current data with this backup?',()=>{fixU(j);const old=S.del,n=cleanState(j);COLS.forEach(c=>n[c].forEach(r=>{if(r.u===undefined)r.u=1}));n.del=Object.assign({},old,n.del);S=n;save();render();toast('Backup restored')},'Yes, replace')}catch(x){toast('Not a valid backup file')}};rd.readAsText(f);t.value=''};
-A.xRep=()=>{const ex=fl(),tot=sum(ex),c=cashOf(ex),T=(h,rows)=>`<table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table>`,days={};
- ex.forEach(e=>(days[e.date]=days[e.date]||[]).push(e));
- const css='body{font:14px/1.5 system-ui,sans-serif;max-width:820px;margin:24px auto;padding:0 16px;color:#111}h1{font-size:22px;margin-bottom:0}h2{font-size:16px;margin-top:28px;border-bottom:1px solid #999}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{padding:4px 6px;border-bottom:1px solid #ddd;text-align:right}th:first-child,td:first-child{text-align:left}.d{margin-top:14px;break-inside:avoid}@media print{p.n{display:none}}';
- const html=`<p class="n" style="color:#666">Open this file and press Ctrl+P to print or save as PDF.</p><h1>Expense report</h1><p>${esc(periodLabel())}</p><p><b>Total ${fm(tot)}</b> &middot; Cash ${fm(c)} &middot; Bank ${fm(tot-c)} &middot; ${ex.length} entries</p>
-<h2>Groups</h2>${T(['Group','Quantity','Cash','Bank','Total','%'],grpRows(ex).map(x=>[`<span style="padding-left:${x.d*14}px">${esc(x.name.split(' › ').pop())}</span>`,qtys(x.l)||'-',fm(cashOf(x.l)),fm(sum(x.l)-cashOf(x.l)),fm(sum(x.l)),Math.round(sum(x.l)/(tot||1)*100)+'%']))}
-<h2>Items</h2>${T(['Item','Group','Quantity','Cash','Bank','Total'],itemRowsAll(ex).map(x=>[esc(x.name),esc(x.g),qtys(x.l)||'-',fm(cashOf(x.l)),fm(sum(x.l)-cashOf(x.l)),fm(sum(x.l))]))}
-<h2>Entries by day</h2>${Object.keys(days).sort().reverse().map(d=>`<div class="d"><b>${d}</b> &middot; ${fm(sum(days[d]))}${T(['Item','Quantity','Mode','Amount'],days[d].map(e=>[esc(elabel(e)),e.q?fq(e.q,e.f):'-',e.mode,fm(e.amt)]))}</div>`).join('')}`;
- dl(`expense-report-${stamp()}.html`,`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Expense report</title><style>${css}</style></head><body>${html}</body></html>`,'text/html')};
-
-
 /* ---------- GitHub sync (encrypted, same design as the calorie tracker) ---------- */
 const TE=new TextEncoder(),TD=new TextDecoder(),b64=u=>{let t='';for(let i=0;i<u.length;i+=32768)t+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(t)},unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
 let KEY=null,ss={s:'off',msg:''},busy=false,again=false,syncT=null,lastTry=0,blocked=false;
