@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-fvlvrEF0Ti/pxaEO9ISvUpojb6/Bpu4i0g2ouilRf0U='; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Expenses"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Expense Tracker</title>
+<style>
+:root{--bg:#f5f2ea;--sf:#fff;--sf2:#f0ece1;--ink:#18211c;--mut:#5f6c64;--ln:#e2dccd;--pri:#0d6b4d;--pri-ink:#fff;--soft:#dcefe6;--cash:#a85f00;--bank:#1f5fae;--dg:#b5341f;--ok:#177a43;--c1:#0d6b4d;--c2:#c98a14;--c3:#1f5fae;--c4:#b0386a;--c5:#6a4fc0;--c6:#c4472e;--c7:#2b8fa3;--c8:#7a8a1f;--sh:0 1px 2px rgba(24,33,28,.06),0 6px 18px rgba(24,33,28,.05);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1411;--sf:#171f1b;--sf2:#1e2823;--ink:#e8f0eb;--mut:#93a79c;--ln:#27352d;--pri:#4cc79b;--pri-ink:#062519;--soft:#1a3328;--cash:#f2b64e;--bank:#79b0f5;--dg:#ff8a76;--ok:#58d48d;--c1:#4cc79b;--c2:#f2b64e;--c3:#79b0f5;--c4:#ee7fa8;--c5:#a592f0;--c6:#ff8f73;--c7:#5fd0e0;--c8:#c2d65a;--sh:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1411;--sf:#171f1b;--sf2:#1e2823;--ink:#e8f0eb;--mut:#93a79c;--ln:#27352d;--pri:#4cc79b;--pri-ink:#062519;--soft:#1a3328;--cash:#f2b64e;--bank:#79b0f5;--dg:#ff8a76;--ok:#58d48d;--c1:#4cc79b;--c2:#f2b64e;--c3:#79b0f5;--c4:#ee7fa8;--c5:#a592f0;--c6:#ff8f73;--c7:#5fd0e0;--c8:#c2d65a;--sh:none;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sf)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:14px;padding:10px 20px;background:var(--sf);border-bottom:1px solid var(--ln)}
+.brand{display:flex;align-items:center;gap:10px}.logo{width:32px;height:32px;flex:none}
+h1{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0;white-space:nowrap}h2{font-size:16px;font-weight:700;margin:0 0 12px;letter-spacing:-.005em}
+nav{display:flex;gap:2px;margin:0 auto}
+nav button{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:var(--mut);padding:8px 14px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+nav button:hover{background:var(--sf2);color:var(--ink)}nav button.on{background:var(--soft);color:var(--pri)}
+.hr{display:flex;gap:8px;align-items:center;margin-left:auto}nav+.hr{margin-left:0}
+.iconbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--ln);background:var(--sf);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-3px}
+#bnav{display:none}
+main{max-width:1100px;margin:0 auto;padding:22px 20px 70px}
+section{display:none}section.on{display:block}
+.cols{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));align-items:start}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:var(--sh)}.cols .card{margin:0}
+.fg{display:grid;gap:14px}.f2{display:grid;gap:12px;grid-template-columns:1fr 1fr}.fg>.btn{width:100%}
+label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:4px;font-weight:600}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--ln);border-radius:10px;background:var(--sf2);color:var(--ink);font:inherit;min-height:42px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);outline-offset:1px;background:var(--sf)}
+.big{font-size:24px;font-weight:700;min-height:54px}
+.btn{background:var(--pri);color:var(--pri-ink);border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn:hover{filter:brightness(1.08)}.btn.sec{background:var(--sf);color:var(--ink);border:1px solid var(--ln)}.btn.dg{background:var(--sf);color:var(--dg);border:1px solid var(--ln)}
+.btn.sm{padding:5px 11px;min-height:32px;font-size:13px;border-radius:8px}label.btn{margin:0;font-size:13px;color:var(--ink)}
+.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.sp{flex:1}
+.seg{display:flex;gap:3px;background:var(--sf2);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;color:var(--mut);font:inherit;font-weight:600;padding:8px 6px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--sf);color:var(--ink);box-shadow:var(--sh);outline:1px solid var(--ln)}
+#lm button[data-v=cash].on{color:var(--cash)}#lm button[data-v=bank].on{color:var(--bank)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.st{background:var(--sf);border:1px solid var(--ln);border-top:3px solid var(--ln);border-radius:14px;padding:14px;box-shadow:var(--sh)}
+.st.tot{border-top-color:var(--pri)}.st.cash{border-top-color:var(--cash)}.st.bank{border-top-color:var(--bank)}.st.cash b{color:var(--cash)}.st.bank b{color:var(--bank)}
+.st b{display:block;font-size:22px;font-weight:700;letter-spacing:-.01em}.st b.s{font-size:14px;line-height:1.5}.st span{font-size:12.5px;color:var(--mut)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{border:1px solid var(--ln);background:var(--sf2);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}.chip:hover{border-color:var(--pri);color:var(--pri)}
+.pv{padding:10px 12px;background:var(--soft);color:var(--ink);border-radius:10px;font-size:13.5px;min-height:42px}
+.hint,small{font-size:12.5px;color:var(--mut)}small{display:block}
+.it{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ln)}.it:last-child{border:0}.it .m{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.cb{font-style:normal;display:inline-flex;align-items:center;gap:4px;margin-right:6px}.cb.c .ic,.cb.c{color:var(--cash)}.cb.b .ic,.cb.b{color:var(--bank)}
+.tree{padding-left:16px;border-left:2px solid var(--ln);margin-left:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{padding:8px;text-align:right;border-bottom:1px solid var(--ln);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}.scroll{overflow-x:auto}
+details.gn>summary{list-style:none;cursor:pointer}details.gn>summary::-webkit-details-marker{display:none}details.gn>summary .gr::before{content:'▸';color:var(--mut);margin-right:-4px}details.gn[open]>summary .gr::before{content:'▾'}
+.gr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px;padding:9px 0;border-bottom:1px solid var(--ln)}.gr .n{flex:1;min-width:0;font-weight:600}.gr .t{font-weight:700}.gr small{flex-basis:100%;padding-left:16px}.gr .dot{align-self:center}
+.gi{padding-left:14px;border-left:2px solid var(--ln);margin-left:6px}.gi>.gr{padding-left:16px}.gi>.gr .n{font-weight:500}
+.bar{height:10px;background:var(--ln);border-radius:5px;overflow:hidden;display:flex}
+.chart{display:flex;align-items:flex-end;gap:3px;height:160px;border-bottom:1px solid var(--ln)}
+.bc{flex:1 0 8px;max-width:40px;min-height:2px;display:flex;flex-direction:column;border-radius:4px 4px 0 0;overflow:hidden}
+.lbls{display:flex;gap:3px;font-size:10.5px;color:var(--mut);margin-top:4px}.lbls span{flex:1 0 8px;max-width:40px;text-align:center;overflow:visible;white-space:nowrap}
+details.day{padding:0}details.day>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+details.day>summary small{flex-basis:100%}details.day>summary b:first-child{font-weight:700}details.day>summary span{margin-left:auto;font-weight:700}
+details.day>div{padding:0 16px 8px;border-top:1px solid var(--ln)}
+details.dl>summary{cursor:pointer;font-weight:600;color:var(--pri)}
+.empty{color:var(--mut);padding:24px;text-align:center}.tree .it{border:0}
+.badge{display:inline-flex;align-items:center;gap:7px;border:1.5px solid currentColor;border-radius:999px;padding:4px 12px;font:600 12.5px inherit;font-family:inherit;cursor:pointer;background:var(--sf)}.badge::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.badge.ok{color:var(--ok)}.badge.bad{color:var(--dg)}.badge.busy{color:var(--mut)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}#modal.on{display:flex}#modal .mb{background:var(--sf);padding:22px;border-radius:16px;max-width:380px;border:1px solid var(--ln)}#modal p{margin:0 0 16px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;font-weight:600;max-width:90vw}#toast.on{opacity:1}
+svg text{fill:var(--ink);font-weight:700}
+@media(max-width:760px){header{padding:10px 14px;gap:8px}nav{display:none}.hr{margin-left:auto}h1{font-size:16px}.badge{max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}.badge::before{display:inline-block;margin-right:6px}
+main{padding:14px 12px 96px}.card{padding:14px;border-radius:14px}input,select,textarea{font-size:16px}#toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px)}
+#bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--mut);font:600 11px system-ui,sans-serif;padding:9px 2px 8px;cursor:pointer}#bnav button .ic{width:22px;height:22px}#bnav button.on{color:var(--pri)}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-plus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M3 21v-5h5"/></symbol>
+<symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+<symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6H3zM5 10v8M9 10v8M15 10v8M19 10v8M3 21h18"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+</defs></svg>
+<header><div class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--pri)"/><circle cx="19.5" cy="19.5" r="8" fill="#f2b64e"/><circle cx="14" cy="14" r="8.5" fill="var(--pri-ink)"/><text x="14" y="18.3" text-anchor="middle" style="font:700 11.5px system-ui,sans-serif;fill:var(--pri)">₹</text></svg><h1>Expense Tracker</h1></div>
+<nav><button data-a="tab" data-v="grp"><svg class="ic"><use href="#i-folder"/></svg>Groups</button><button data-a="tab" data-v="itm"><svg class="ic"><use href="#i-tag"/></svg>Items</button><button data-a="tab" data-v="log"><svg class="ic"><use href="#i-plus"/></svg>Log</button><button data-a="tab" data-v="rec"><svg class="ic"><use href="#i-chart"/></svg>Records</button><button data-a="tab" data-v="syn"><svg class="ic"><use href="#i-refresh"/></svg>Sync</button></nav>
+<div class="hr"><button class="badge bad" id="syncBadge" type="button" data-a="tab" data-v="syn">Not connected</button><button class="iconbtn" id="themeBtn" type="button" data-a="theme" aria-label="Switch light or dark theme"></button></div></header>
+<div id="bnav"><button data-a="tab" data-v="grp"><svg class="ic"><use href="#i-folder"/></svg>Groups</button><button data-a="tab" data-v="itm"><svg class="ic"><use href="#i-tag"/></svg>Items</button><button data-a="tab" data-v="log"><svg class="ic"><use href="#i-plus"/></svg>Log</button><button data-a="tab" data-v="rec"><svg class="ic"><use href="#i-chart"/></svg>Records</button><button data-a="tab" data-v="syn"><svg class="ic"><use href="#i-refresh"/></svg>Sync</button></div>
+<main><section id="grp"></section><section id="itm"></section><section id="log"></section><section id="rec"></section><section id="syn"></section></main>
+<div id="modal"><div class="mb"><p id="mMsg"></p><div class="row"><button class="btn dg" id="mYes">Yes</button><button class="btn sec" id="mNo">Cancel</button></div></div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],K='xt-v2';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const U={g:['w',1],kg:['w',1000],ml:['v',1],l:['v',1000],unit:['n',1]},FU={w:['g','kg'],v:['ml','l'],n:['unit']};
+const UL={g:'g',kg:'kg',ml:'ml',l:'L',unit:'units'},UO={g:'g (grams)',kg:'kg',ml:'ml',l:'L (litres)',unit:'Units (count)'};
+const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),pd=s=>{const[y,m,d]=s.split('-');return new Date(y,m-1,d)},today=()=>ds(new Date());
+const fm=n=>'₹'+(+n).toLocaleString('en-IN',{maximumFractionDigits:2}),sum=a=>a.reduce((s,e)=>s+e.amt,0),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const fq=(q,f)=>{const r=x=>+x.toFixed(2);return f==='w'?(q>=1000?r(q/1000)+' kg':r(q)+' g'):f==='v'?(q>=1000?r(q/1000)+' L':r(q)+' ml'):r(q)+(q===1?' unit':' units')};
+const ic=n=>`<svg class="ic"><use href="#i-${n}"/></svg>`;
+const st=(v,l,c,k)=>`<div class="st${k?' '+k:''}"><b${c?` class="${c}"`:''}>${v}</b><span>${l}</span></div>`;
+const SID=/^[A-Za-z0-9_-]{1,64}$/,UNS=['g','kg','ml','l','unit'],COLS=['groups','items','exp'];
+const cs=(v,n=120)=>String(v==null?'':v).slice(0,n),cn=(v,m=1e12)=>{v=+v;return Number.isFinite(v)?Math.min(Math.max(v,0),m):0},sid=v=>v!=null&&v!=='null'&&SID.test(String(v))?String(v):null;
+function cleanRec(c,r){if(!r||typeof r!=='object'||!sid(r.id))return null;const o={id:String(r.id)};
+ if(c==='groups'){o.name=cs(r.name);o.p=sid(r.p)}
+ else if(c==='items'){o.name=cs(r.name);o.g=sid(r.g);o.un=UNS.includes(r.un)?r.un:'kg'}
+ else{if(!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date)))return null;Object.assign(o,{amt:cn(r.amt,1e9),date:String(r.date),mode:r.mode==='bank'?'bank':'cash',note:cs(r.note,200),cat:sid(r.cat)});if(sid(r.item))o.item=String(r.item);if(r.nm)o.nm=cs(r.nm);if(+r.q>0&&['w','v','n'].includes(r.f)){o.f=r.f;o.q=cn(r.q,1e9)}}
+ if(r.u!==undefined)o.u=cn(r.u,4e12);return o}
+function cleanDel(d){const o={};if(d&&typeof d==='object')Object.keys(d).forEach(k=>{const v=d[k];if(/^(groups|items|exp):[A-Za-z0-9_.:-]{1,64}$/.test(k)&&v&&typeof v==='object'&&/^(core|\d{4}-\d{2})$/.test(String(v.f))&&Number.isFinite(+v.t))o[k]={t:+v.t,f:String(v.f)}});return o}
+const cleanState=o=>{o=o||{};const r={del:cleanDel(o.del)};COLS.forEach(c=>{r[c]=(Array.isArray(o[c])?o[c]:[]).map(x=>cleanRec(c,x)).filter(Boolean)});return r};
+const cleanFile=o=>{const rec={};COLS.forEach(c=>{rec[c]=(o&&o.rec&&Array.isArray(o.rec[c])?o.rec[c]:[]).map(x=>cleanRec(c,x)).filter(Boolean)});return{v:1,rec,del:cleanDel(o&&o.del)}};
+const fixU=j=>(j.items||[]).forEach(i=>{if(i&&typeof i.u==='string'){i.un=i.u;delete i.u}});
+let S={groups:[],items:[],exp:[]};
+try{const r=localStorage.getItem(K),o=localStorage.getItem('xt-v1');if(r)S=JSON.parse(r);else if(o){const j=JSON.parse(o);S={groups:j.cats||[],items:[],exp:j.exp||[]}}}catch(e){}
+fixU(S);
+if(!(S.groups||[]).length&&!(S.items||[]).length&&!(S.exp||[]).length){S={groups:[],items:[],exp:[]};seed()}
+S=cleanState(S);COLS.forEach(c=>S[c].forEach(r=>{if(r.u===undefined)r.u=1}));
+function seed(){const m={};[['Food'],['Fruits','Food'],['Banana','Fruits'],['Robusta','Banana'],['Elaichi','Banana'],['Apple','Fruits'],['Dairy','Food'],['Transport'],['Fuel','Transport'],['Bills']].forEach((x,i)=>{S.groups.push({id:'g'+i,name:x[0],p:x[1]?m[x[1]]:null});m[x[0]]='g'+i});
+ [['Robusta banana','Robusta','kg'],['Elaichi banana','Elaichi','kg'],['Apple','Apple','kg'],['Milk','Dairy','l'],['Eggs','Dairy','unit'],['Petrol','Fuel','l']].forEach((x,i)=>S.items.push({id:'i'+i,name:x[0],g:m[x[1]],un:x[2]}))}
+/* change tracking for sync: every record has an update time (u); deletions leave a tombstone */
+const SK=K+'sync';let cfg={shas:{},dirty:[],pend:0,last:0},shadow={};
+try{const r=localStorage.getItem(SK);if(r)cfg=Object.assign(cfg,JSON.parse(r))}catch(e){}
+const saveCfg=()=>{try{localStorage.setItem(SK,JSON.stringify(cfg))}catch(e){}};
+const keyOf=(c,r)=>c+':'+r.id,fileOf=(c,r)=>c==='exp'?r.date.slice(0,7):'core';
+const sigOf=(c,r)=>{const o=Object.assign({},r);delete o.u;return JSON.stringify(o,Object.keys(o).sort())};
+const rebuildShadow=()=>{shadow={};COLS.forEach(c=>S[c].forEach(r=>{shadow[keyOf(c,r)]={sig:sigOf(c,r),file:fileOf(c,r)}}))};
+const markDirty=f=>{if(!cfg.dirty.includes(f)){cfg.dirty.push(f);saveCfg()}};
+const allFiles=()=>{const o=new Set();COLS.forEach(c=>S[c].forEach(r=>o.add(fileOf(c,r))));return[...o]};
+function detect(){const now=Date.now();let n=0;const seen={};
+ COLS.forEach(c=>S[c].forEach(r=>{const k=keyOf(c,r),sg=sigOf(c,r),sh=shadow[k],f=fileOf(c,r);seen[k]=1;if(!sh||sh.sig!==sg){r.u=Math.max(now,(r.u||0)+1);shadow[k]={sig:sg,file:f};markDirty(f);n++}}));
+ Object.keys(shadow).forEach(k=>{if(!seen[k]){const f=shadow[k].file;S.del[k]={t:now,f};markDirty(f);delete shadow[k];n++}});return n}
+const persist=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Could not save in this browser')}};
+const save=()=>{const n=detect();persist();if(n){cfg.pend=(cfg.pend||0)+n;saveCfg();if(cfg.token)schedule()}};
+rebuildShadow();
+let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)};
+const grp=id=>S.groups.find(g=>g.id===id),itm=id=>S.items.find(i=>i.id===id),kids=p=>S.groups.filter(g=>(g.p||null)===p);
+const path=id=>{const a=[];while(id&&grp(id)){a.unshift(grp(id).name);id=grp(id).p}return a.join(' › ')||'Uncategorized'};
+const desc=id=>[id,...kids(id).flatMap(k=>desc(k.id))];
+const flat=(p=null,d=0)=>kids(p).flatMap(k=>[[k.id,d,k.name],...flat(k.id,d+1)]);
+const opts=(sel,skip,top='— Top level —')=>`<option value="">${top}</option>`+flat().filter(x=>!(skip&&desc(skip).includes(x[0]))).map(x=>`<option value="${x[0]}"${x[0]===sel?' selected':''}>${'\u00a0\u00a0'.repeat(x[1])}${esc(x[2])}</option>`).join('');
+const ecat=e=>{const i=itm(e.item);return i?i.g||null:e.cat||null},elabel=e=>{const i=itm(e.item);return i?i.name:e.nm||e.note||'(no item)'};
+const qtys=l=>['w','v','n'].map(f=>{const q=l.filter(e=>e.f===f).reduce((s,e)=>s+e.q,0);return q?fq(q,f):''}).filter(Boolean).join(' · ');
+const erow=e=>`<div class="it"><span class="dot" style="background:var(--${e.mode})"></span><div class="m"><b>${esc(elabel(e))}</b>${e.q?' · '+fq(e.q,e.f):''}<small>${e.date} · ${e.mode} · ${esc(path(ecat(e)))}${e.note&&itm(e.item)?' · '+esc(e.note):''}</small></div><b>${fm(e.amt)}</b><button class="btn dg sm" data-a="del" data-v="${e.id}" aria-label="Delete">${ic('x')}</button></div>`;
+let tab='log',rv='sum',rMode='month',anchor=today(),cf=today(),cu=today(),mf='all',cur=null,eg=null,ei=null,lm='cash',ld=today(),gpl='',igl='';
+const A={},C={};
+function range(){const a=pd(anchor);if(rMode==='all')return null;if(rMode==='day')return[anchor,anchor];
+ if(rMode==='week'){const s=new Date(a);s.setDate(a.getDate()-((a.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[ds(s),ds(e)]}
+ if(rMode==='month')return[ds(new Date(a.getFullYear(),a.getMonth(),1)),ds(new Date(a.getFullYear(),a.getMonth()+1,0))];
+ if(rMode==='year')return[a.getFullYear()+'-01-01',a.getFullYear()+'-12-31'];return[cf,cu]}
+function step(n){const a=pd(anchor);if(rMode==='day')a.setDate(a.getDate()+n);else if(rMode==='week')a.setDate(a.getDate()+7*n);else if(rMode==='month'){a.setDate(1);a.setMonth(a.getMonth()+n)}else if(rMode==='year')a.setFullYear(a.getFullYear()+n);anchor=ds(a)}
+const fl=()=>{const r=range();return S.exp.filter(e=>(!r||(e.date>=r[0]&&e.date<=r[1]))&&(mf==='all'||e.mode===mf))};
+function buckets(ex){let r=range();if(!r){const d=S.exp.map(e=>e.date).sort();r=[d[0]||today(),d[d.length-1]||today()]}
+ const mo=(pd(r[1])-pd(r[0]))/864e5>62,k=[],c=pd(r[0]);
+ if(mo){c.setDate(1);while(ds(c)<=r[1]){k.push(ds(c).slice(0,7));c.setMonth(c.getMonth()+1)}}else while(ds(c)<=r[1]){k.push(ds(c));c.setDate(c.getDate()+1)}
+ return k.map(x=>{const l=ex.filter(e=>e.date.startsWith(x));return{k:x,c:sum(l.filter(e=>e.mode==='cash')),b:sum(l.filter(e=>e.mode==='bank'))}})}
+function chart(ex){const b=buckets(ex),mx=Math.max(1,...b.map(x=>x.c+x.b)),sp=Math.ceil(b.length/10);
+ return`<div class="chart">${b.map(x=>{const t=x.c+x.b;return`<div class="bc" title="${x.k}: ${fm(t)}" style="height:${t/mx*100}%"><i style="flex:1;background:var(--cash)"></i><i style="height:${t?x.b/t*100:0}%;background:var(--bank)"></i></div>`}).join('')}</div><div class="lbls">${b.map((x,i)=>`<span>${i%sp===0?x.k.slice(x.k.length>7?8:5):''}</span>`).join('')}</div><p class="hint"><span style="color:var(--cash)">■</span> Cash &nbsp;<span style="color:var(--bank)">■</span> Bank &nbsp;· ${b[0]&&b[0].k.length>7?'per day (date of month)':'per month'}</p>`}
+const PAL=[1,2,3,4,5,6,7,8].map(n=>`var(--c${n})`);
+
+function rGrp(){const n=id=>S.items.filter(i=>i.g===id).length;
+ const tr=p=>kids(p).map(c=>`<div class="it">${eg===c.id?`<input id="rn" value="${esc(c.name)}"><button class="btn sm" data-a="rnG" data-v="${c.id}">Save</button>`:`<span class="m"><b>${esc(c.name)}</b>${n(c.id)?` <small style="display:inline">· ${n(c.id)} item${n(c.id)>1?'s':''}</small>`:''}</span><button class="btn sec sm" data-a="edG" data-v="${c.id}">Rename</button><button class="btn dg sm" data-a="delG" data-v="${c.id}">Delete</button>`}</div>${kids(c.id).length?`<div class="tree">${tr(c.id)}</div>`:''}`).join('');
+ $('#grp').innerHTML=`<div class="cols"><div class="card"><h2>New group</h2><div class="fg"><div><label>Name</label><input id="gn" placeholder="Fruits, Banana, Robusta…"></div><div><label>Inside</label><select id="gp">${opts(gpl)}</select></div><button class="btn" data-a="addG">Add group</button></div><p class="hint">Groups nest as deep as you like (Food › Fruits › Banana › Robusta). Reports roll every expense up through all its parent groups, and you can drill down level by level.</p></div><div class="card"><h2>Your groups</h2>${tr(null)||'<div class="empty">No groups yet</div>'}<p class="hint">Deleting a group moves its sub-groups, items and expenses up to its parent.</p></div></div>`}
+A.addG=()=>{const n=$('#gn').value.trim();if(!n)return;gpl=$('#gp').value;S.groups.push({id:uid(),name:n,p:gpl||null});save();rGrp()};
+A.edG=v=>{eg=v;rGrp();$('#rn').focus()};A.rnG=v=>{const n=$('#rn').value.trim();if(n)grp(v).name=n;eg=null;save();rGrp()};
+const _delG=id=>{const g=grp(id),p=g.p||null;S.groups.forEach(x=>{if(x.p===id)x.p=p});S.items.forEach(i=>{if(i.g===id)i.g=p});S.exp.forEach(e=>{if(e.cat===id)e.cat=p});S.groups=S.groups.filter(x=>x.id!==id);if(cur===id)cur=p;save();rGrp()};
+A.delG=id=>{const g=grp(id);if(g)ask(`Delete the group "${g.name}"? Its sub-groups, items and expenses move up to the parent group.`,()=>_delG(id))};
+
+const iRows=()=>{const q=($('#iS')?.value||'').toLowerCase(),l=S.items.filter(i=>i.name.toLowerCase().includes(q)||path(i.g).toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));
+ return'<tr><th>Item</th><th>Group</th><th>Unit</th><th></th></tr>'+(l.map(i=>`<tr><td>${esc(i.name)}</td><td>${esc(path(i.g))}</td><td>${UL[i.un]}</td><td><button class="btn sec sm" data-a="edI" data-v="${i.id}">Edit</button> <button class="btn dg sm" data-a="delI" data-v="${i.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No items</td></tr>')};
+function rItm(){const i=itm(ei)||{};$('#itm').innerHTML=`<div class="cols"><div class="card"><h2>${ei?'Edit item':'New item'}</h2><div class="fg"><div><label>Item name</label><input id="iN" value="${esc(i.name||'')}" placeholder="Banana, Milk, Eggs…"></div><div><label>Group</label><select id="iG">${opts(i.g||igl,null,'— Uncategorized —')}</select></div><div><label>Counted in</label><select id="iU">${Object.keys(UO).filter(u=>!['g','ml'].includes(u)||u===i.un).map(u=>`<option value="${u}"${(i.un||'kg')===u?' selected':''}>${UO[u]}</option>`).join('')}</select></div><p class="hint">Pick kg, litres or plain units. When you log a purchase you can still enter smaller amounts (e.g. 500 g for a kg item), and reports add up the quantity and average price for you.</p><div class="row"><button class="btn" data-a="saveI">Save item</button>${ei?'<button class="btn sec" data-a="cnI">Cancel edit</button>':''}</div></div></div>
+ <div class="card"><div class="row"><h2 class="sp" style="margin:0">Saved items (${S.items.length})</h2><input id="iS" placeholder="Search…" style="width:150px"></div><div class="scroll" style="margin-top:10px"><table id="iT">${iRows()}</table></div></div></div>`}
+A.saveI=()=>{const n=$('#iN').value.trim();if(!n)return toast('Enter an item name');igl=$('#iG').value;const o={name:n,g:igl||null,un:$('#iU').value};if(ei)Object.assign(itm(ei),o);else S.items.push({id:uid(),...o});ei=null;save();rItm();toast('Item saved')};
+A.edI=v=>{ei=v;rItm();scrollTo(0,0)};A.cnI=()=>{ei=null;rItm()};
+const _delI=id=>{const i=itm(id);S.exp.forEach(e=>{if(e.item===id){e.cat=i.g||null;e.nm=i.name;delete e.item}});S.items=S.items.filter(x=>x.id!==id);save();rItm()};
+A.delI=id=>{const i=itm(id);if(i)ask(`Delete the item "${i.name}"? Its past expenses stay in your records.`,()=>_delI(id))};
+
+function rLog(){const t=today(),mo=S.exp.filter(e=>e.date.startsWith(t.slice(0,7))),rc=S.exp.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id>a.id?1:-1).slice(0,12);
+ const rI=[...new Set(S.exp.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id>a.id?1:-1).map(e=>e.item).filter(x=>x&&itm(x)))].slice(0,6);
+ $('#log').innerHTML=`<div class="stats">${st(fm(sum(S.exp.filter(e=>e.date===t))),'Spent today')}${st(fm(sum(mo)),'This month','','tot')}${st(fm(sum(mo.filter(e=>e.mode==='cash'))),'Cash (this month)','','cash')}${st(fm(sum(mo.filter(e=>e.mode==='bank'))),'Bank (this month)','','bank')}</div>
+ <div class="cols"><div class="card" id="lf"><h2>New expense</h2><div class="fg">${S.items.length?'':'<p class="hint">No items yet. Add your items in tab 2 first, then log what you spent on them.</p>'}
+ <div><label>Item</label>${rI.length?`<div class="chips">${rI.map(x=>`<button class="chip" data-a="pickI" data-v="${x}">${esc(itm(x).name)}</button>`).join('')}</div>`:''}<select id="lI" data-c="lI"><option value="">— Choose an item —</option>${S.items.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join('')}</select></div>
+ <div class="f2" id="lQ"><div><label>Quantity</label><input id="lq" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 2"></div><div><label>Unit</label><select id="lu"></select></div></div>
+ <div class="f2"><div><label>Amount paid (₹)</label><input id="la" class="big" type="number" min="0" step="any" inputmode="decimal"></div><div><label>Date</label><input id="ld" type="date" value="${ld}"></div></div>
+ <div><label>Paid by</label><div class="seg" id="lm" style="margin:0"><button data-a="lm" data-v="cash" class="${lm==='cash'?'on':''}">${ic('cash')}Cash</button><button data-a="lm" data-v="bank" class="${lm==='bank'?'on':''}">${ic('bank')}Bank</button></div></div>
+ <div><label>Note (optional)</label><input id="ln"></div><div class="pv" id="lp"></div><button class="btn" data-a="addE">${ic('plus')}Save expense</button></div></div>
+ <div class="card"><h2>Recent expenses</h2>${rc.map(erow).join('')||'<div class="empty">Nothing logged yet</div>'}</div></div>`;lSync()}
+function lSync(){const i=itm($('#lI').value);$('#lu').innerHTML=i?FU[U[i.un][0]].map(u=>`<option value="${u}"${u===i.un?' selected':''}>${UL[u]}</option>`).join(''):'';lPrev()}
+function lPrev(){const i=itm($('#lI').value),a=+$('#la').value,q=+$('#lq').value;let h=i?esc(path(i.g)):'Choose an item to see its group';
+ if(i&&q>0&&a>0){const[f,m]=U[$('#lu').value],b=q*m,p=f==='n'?a/b:a/b*1000;h+=`<br>${fq(b,f)} for ${fm(a)} → <b>${fm(p)}/${f==='w'?'kg':f==='v'?'L':'unit'}</b>`}$('#lp').innerHTML=h}
+A.pickI=v=>{$('#lI').value=v;lSync();$('#lq').focus()};
+A.lm=v=>{lm=v;$$('#lm button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))};
+A.addE=()=>{const i=itm($('#lI').value);if(!i)return toast('Choose an item first');const a=+$('#la').value;if(!(a>0))return toast('Enter the amount paid');
+ const q=+$('#lq').value,e={id:uid(),amt:a,date:$('#ld').value||today(),mode:lm,note:$('#ln').value.trim(),item:i.id,nm:i.name,cat:i.g||null};
+ if(q>0){const[f,m]=U[$('#lu').value];e.f=f;e.q=q*m}
+ ld=e.date;S.exp.push(e);save();rLog();toast('Expense saved')};
+const _del=id=>{S.exp=S.exp.filter(e=>e.id!==id);save();render()};
+A.del=id=>{const e=S.exp.find(x=>x.id===id);if(e)ask(`Delete this expense (${elabel(e)}, ${fm(e.amt)} on ${e.date})?`,()=>_del(id))};C.lI=lSync;
+
+function rRec(){if(cur&&!grp(cur))cur=null;const ex=fl(),tot=sum(ex),cash=sum(ex.filter(e=>e.mode==='cash')),bank=tot-cash,r=range(),nd=new Set(ex.map(e=>e.date)).size,nav=rMode!=='all'&&rMode!=='custom';
+ let h=`<div class="card"><div class="row"><div><label>View</label><select data-c="rM">${['day','week','month','year','all','custom'].map(m=>`<option value="${m}"${m===rMode?' selected':''}>${m[0].toUpperCase()+m.slice(1)}</option>`).join('')}</select></div>${rMode==='custom'?`<div><label>From</label><input type="date" data-c="cf" value="${cf}"></div><div><label>To</label><input type="date" data-c="cu" value="${cu}"></div>`:rMode!=='all'?`<div><label>Date</label><input type="date" data-c="rA" value="${anchor}"></div>`:''}<div class="sp"></div>${nav?'<button class="btn sec sm" data-a="pv">‹ Prev</button><button class="btn sec sm" data-a="nx">Next ›</button>':''}</div>
+ <div class="seg" style="margin:12px 0 0">${[['all','All modes'],['cash',ic('cash')+'Cash'],['bank',ic('bank')+'Bank']].map(x=>`<button data-a="mf" data-v="${x[0]}" class="${mf===x[0]?'on':''}">${x[1]}</button>`).join('')}</div><details class="dl"${bkOpen?' open':''} style="margin-top:14px"><summary>Backup and restore</summary><div class="row" style="margin-top:12px"><button class="btn sec sm" data-a="xJson">${ic('down')}Backup everything (JSON)</button><label class="btn sec sm">${ic('up')}Restore backup<input type="file" accept=".json,application/json" data-c="xImp" hidden></label></div><p class="hint">The backup file always contains all your data. Restoring replaces everything currently on this device.</p></details></div>
+ <div class="seg"><button data-a="rv" data-v="sum" class="${rv==='sum'?'on':''}">Summary</button><button data-a="rv" data-v="days" class="${rv==='days'?'on':''}">Days</button></div><h2>${r?(r[0]===r[1]?r[0]:r[0]+' → '+r[1]):'All time'}</h2>`;
+ if(!ex.length)h+='<div class="card empty">No expenses in this view</div>';
+ else if(rv==='days'){const m={};ex.forEach(e=>(m[e.date]=m[e.date]||[]).push(e));h+=Object.keys(m).sort().reverse().map(d=>{const l=m[d];return`<details class="card day"><summary><b>${d}</b><span>${fm(sum(l))}</span><small><i class="cb c">${ic('cash')}${fm(sum(l.filter(e=>e.mode==='cash')))}</i><i class="cb b">${ic('bank')}${fm(sum(l.filter(e=>e.mode==='bank')))}</i></small></summary><div>${l.map(erow).join('')}</div></details>`}).join('')}
+ else{h+=`<div class="stats">${st(fm(tot),'Total spent','','tot')}${st(fm(cash),'Cash','','cash')}${st(fm(bank),'Bank','','bank')}${st(ex.length,'Entries')}${st(fm(tot/nd),'Avg per day logged')}${st(qtys(ex)||'—','Quantity bought','s')}</div>
+ <div class="card"><h2>Spend over time</h2>${chart(ex)}</div>`;
+  const byL=l=>{const m={};l.forEach(e=>(m[elabel(e)]=m[elabel(e)]||[]).push(e));return m};
+  const cell=(name,l,dot,pc)=>{const t=sum(l),c=sum(l.filter(e=>e.mode==='cash'));return`<div class="gr">${dot?`<span class="dot" style="background:${dot}"></span>`:''}<span class="n">${esc(name)}</span><span class="t">${fm(t)}</span><small>${[qtys(l),`<i class="cb c">${ic('cash')}${fm(c)}</i>`,`<i class="cb b">${ic('bank')}${fm(t-c)}</i>`,pc?Math.round(t/tot*100)+'%':''].filter(Boolean).join(' · ')}</small></div>`};
+  const itemRows=l=>{const m=byL(l);return Object.keys(m).map(n=>({v:sum(m[n]),h:cell(n,m[n])}))};
+  const gl=g=>{const ids=desc(g.id);return ex.filter(e=>ids.includes(ecat(e)))};
+  const node=(g,dot)=>{const l=gl(g);if(!l.length)return null;const inner=[...itemRows(ex.filter(e=>ecat(e)===g.id)),...kids(g.id).map(k=>node(k)).filter(Boolean)].sort((a,b)=>b.v-a.v).map(x=>x.h).join('');return{v:sum(l),h:`<details class="gn"><summary>${cell(g.name,l,dot,1)}</summary><div class="gi">${inner}</div></details>`}};
+  const tops=[...kids(null).map(g=>({v:sum(gl(g)),g})),...Object.entries(byL(ex.filter(e=>ecat(e)===null))).map(([n,l])=>({v:sum(l),n,l}))].filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  let acc=0,sv=`<svg viewBox="0 0 42 42" width="190" height="190" style="display:block;margin:0 auto 10px"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="var(--ln)" stroke-width="6"/>`;
+  tops.forEach((x,i)=>{const c=x.v/tot*100;sv+=`<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${PAL[i%8]}" stroke-width="6" stroke-dasharray="${c} ${100-c}" stroke-dashoffset="${-acc}" transform="rotate(-90 21 21)"/>`;acc+=c});sv+=`<text x="21" y="22.5" text-anchor="middle" style="font-size:4.5px">${fm(tot)}</text></svg>`;
+  h+=`<div class="card"><div class="row"><h2 class="sp" style="margin:0">Groups &amp; items</h2><button class="btn sec sm" data-a="xAll" data-v="1">Expand all</button><button class="btn sec sm" data-a="xAll" data-v="0">Collapse all</button></div>${sv}<div id="gt">${tops.map((x,i)=>x.g?node(x.g,PAL[i%8]).h:cell(x.n,x.l,PAL[i%8],1)).join('')}</div><p class="hint">Each group shows its total with the cash and bank split. Open it to see its items and sub-groups, which open the same way.</p></div>`;
+  const m={};ex.forEach(e=>{const k=elabel(e)+'|'+(e.f||'');const o=m[k]=m[k]||{n:elabel(e),f:e.f,a:0,ca:0,q:0,c:0};o.a+=e.amt;if(e.mode==='cash')o.ca+=e.amt;if(e.q){o.q+=e.q;o.c+=e.amt}});
+  h+=`<div class="card"><h2>Top items</h2><div class="scroll"><table><tr><th>Item</th><th>Quantity</th><th>Cash</th><th>Bank</th><th>Total</th><th>Avg price</th></tr>${Object.values(m).sort((a,b)=>b.a-a.a).slice(0,15).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.q?fq(x.q,x.f):'—'}</td><td>${fm(x.ca)}</td><td>${fm(x.a-x.ca)}</td><td>${fm(x.a)}</td><td>${x.q?fm(x.f==='n'?x.c/x.q:x.c/x.q*1000)+'/'+(x.f==='w'?'kg':x.f==='v'?'L':'unit'):'—'}</td></tr>`).join('')}</table></div></div>`}
+
+ $('#rec').innerHTML=h}
+A.xAll=v=>$$('#gt details').forEach(d=>d.open=v==='1');A.pv=()=>{step(-1);rRec()};A.nx=()=>{step(1);rRec()};A.mf=v=>{mf=v;rRec()};A.rv=v=>{rv=v;rRec()};A.dr=v=>{cur=v||null;rRec()};
+C.rM=v=>{rMode=v;rRec()};C.rA=v=>{anchor=v||today();rRec()};C.cf=v=>{cf=v||cf;rRec()};C.cu=v=>{cu=v||cu;rRec()};
+/* ---------- backup and restore ---------- */
+let bkOpen=true;try{bkOpen=!matchMedia('(max-width:760px)').matches}catch(e){}
+document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('dl'))bkOpen=e.target.open},true);
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Downloaded '+name)}
+const stamp=()=>today();
+A.xJson=()=>dl(`expense-tracker-backup-${stamp()}.json`,JSON.stringify(S,null,2),'application/json');
+C.xImp=(v,t)=>{const f=t.files[0];if(!f)return;if(f.size>3e7){t.value='';return toast('That file is too large')}const rd=new FileReader();
+ rd.onload=()=>{try{const j=JSON.parse(rd.result);if(![j.groups,j.items,j.exp].every(Array.isArray))throw 0;
+  ask('Replace all current data with this backup?',()=>{fixU(j);const old=S.del,n=cleanState(j);COLS.forEach(c=>n[c].forEach(r=>{if(r.u===undefined)r.u=1}));n.del=Object.assign({},old,n.del);S=n;save();render();toast('Backup restored')},'Yes, replace')}catch(x){toast('Not a valid backup file')}};rd.readAsText(f);t.value=''};
+/* ---------- GitHub sync (encrypted, same design as the calorie tracker) ---------- */
+const TE=new TextEncoder(),TD=new TextDecoder(),b64=u=>{let t='';for(let i=0;i<u.length;i+=32768)t+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(t)},unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+let KEY=null,ss={s:'off',msg:''},busy=false,again=false,syncT=null,lastTry=0,blocked=false;
+addEventListener('securitypolicyviolation',e=>{if(/github/.test(e.blockedURI))blocked=true});
+const netMsg=()=>blocked?'This preview page is not allowed to reach GitHub. Sync works once the files are hosted on your own site (for example GitHub Pages).':'Cannot reach GitHub (no internet?)';
+async function deriveKey(pass,salt,it){const km=await crypto.subtle.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:it||250000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encJ(o){const iv=crypto.getRandomValues(new Uint8Array(12)),ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},KEY,TE.encode(JSON.stringify(o)));return JSON.stringify({v:1,iv:b64(iv),d:b64(new Uint8Array(ct))})}
+async function decJ(t){const o=typeof t==='string'?JSON.parse(t):t,pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},KEY,unb64(o.d));return JSON.parse(TD.decode(pt))}
+const fname=k=>k==='core'?'core.json':'m-'+k+'.json',kname=n=>n==='core.json'?'core':n.slice(2,-5),FILE_RE=/^(core|m-\d{4}-\d{2})\.json$/;
+const api=(p,o={})=>fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+p,Object.assign({},o,{cache:'no-store',headers:Object.assign({Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},o.headers||{})}));
+const RAW={Accept:'application/vnd.github.raw+json'};
+async function apiErr(r){let m='';try{m=(await r.json()).message||''}catch(e){}
+ const e=new Error(r.status===401?'The access key is wrong or has expired':r.status===403?(r.headers.get('x-ratelimit-remaining')==='0'?'GitHub rate limit reached, try again later':'The key does not have permission (it needs Contents: Read and write)'):r.status===404?'Folder not found. Check the username, folder name, and that the key can access that folder':'GitHub error '+r.status+(m?': '+m:''));e.status=r.status;return e}
+async function listRemote(){const r=await api('/contents');
+ if(r.status===404){let m='';try{m=(await r.json()).message||''}catch(e){}if(/empty/i.test(m))return{};throw await apiErr(r)}
+ if(!r.ok)throw await apiErr(r);const o={};(await r.json()).forEach(x=>{if(x.type==='file')o[x.name]=x.sha});return o}
+async function getFile(n){const r=await api('/contents/'+n,{headers:RAW});if(!r.ok)throw await apiErr(r);return cleanFile(await decJ(await r.text()))}
+function buildFile(key){const rec={},del={};COLS.forEach(c=>{rec[c]=S[c].filter(r=>fileOf(c,r)===key)});Object.keys(S.del).forEach(k=>{if(S.del[k].f===key)del[k]=S.del[k]});return{v:1,rec,del}}
+const isEmpty=o=>!Object.keys(o.del).length&&COLS.every(c=>!o.rec[c].length);
+function vset(o){const a=[];COLS.forEach(c=>(o.rec[c]||[]).forEach(r=>a.push(keyOf(c,r)+'@'+(r.u||0))));Object.keys(o.del||{}).forEach(k=>a.push('x'+k+'@'+o.del[k].t));return a.sort().join('|')}
+function mergeInto(list){const M={};COLS.forEach(c=>{M[c]=new Map(S[c].map(r=>[keyOf(c,r),r]))});
+ list.forEach(R=>{Object.keys(R.del||{}).forEach(k=>{const v=R.del[k],c=S.del[k];if(!c||c.t<v.t)S.del[k]=v});
+  COLS.forEach(c=>(R.rec[c]||[]).forEach(r=>{const k=keyOf(c,r),l=M[c].get(k);if(!l||(l.u||0)<(r.u||0))M[c].set(k,r)}))});
+ COLS.forEach(c=>{S[c]=[...M[c].values()].filter(r=>{const d=S.del[keyOf(c,r)];return!(d&&d.t>=(r.u||0))})})}
+function afterMerge(){rebuildShadow();persist();const a=document.activeElement;if(!a||!/INPUT|SELECT|TEXTAREA/.test(a.tagName))render()}
+async function ensureKey(){if(KEY)return;if(!cfg.salt||!cfg.pass)throw new Error('Not connected');KEY=await deriveKey(cfg.pass,unb64(cfg.salt),cfg.it)}
+async function syncOnce(){await ensureKey();const files=await listRemote(),remotes={};
+ const changed=Object.keys(files).filter(n=>FILE_RE.test(n)&&files[n]!==cfg.shas[n]);
+ for(const n of changed)remotes[n]=await getFile(n);
+ if(changed.length){mergeInto(changed.map(n=>remotes[n]));afterMerge();changed.forEach(n=>{cfg.shas[n]=files[n]})}
+ const up=new Set(cfg.dirty);changed.forEach(n=>{const k=kname(n);if(vset(buildFile(k))!==vset(remotes[n]))up.add(k)});
+ for(const k of up){const name=fname(k),obj=buildFile(k);
+  if(isEmpty(obj)&&!files[name]){cfg.dirty=cfg.dirty.filter(x=>x!==k);continue}
+  const body={message:'sync',content:b64(TE.encode(await encJ(obj)))};if(cfg.shas[name])body.sha=cfg.shas[name];
+  const r=await api('/contents/'+name,{method:'PUT',body:JSON.stringify(body)});
+  if(r.status===409||r.status===422)return true;if(!r.ok)throw await apiErr(r);
+  cfg.shas[name]=(await r.json()).content.sha;cfg.dirty=cfg.dirty.filter(x=>x!==k);saveCfg()}
+ cfg.dirty=[];return false}
+async function sync(){if(!cfg.token)return setSt('off');if(busy){again=true;return}
+ busy=true;lastTry=Date.now();setSt('busy');
+ try{for(let i=0;i<3;i++){if(!(await syncOnce()))break;if(i===2)throw new Error('Another device is syncing at the same moment. Will retry.')}
+  cfg.last=Date.now();cfg.pend=0;saveCfg();setSt('ok')}
+ catch(e){const was=ss.s==='err',msg=e.name==='OperationError'?'Wrong passphrase, or the data folder was reset. Disconnect and connect again.':e instanceof TypeError?netMsg():e instanceof SyntaxError?'A file in the data folder is damaged or not from this app':e.message;setSt('err',msg);if(!was)toast('Not synced: '+msg)}
+ busy=false;if(again){again=false;schedule(500)}}
+function schedule(ms=2000){if(!cfg.token)return;setSt('busy');clearTimeout(syncT);syncT=setTimeout(sync,ms)}
+function trigger(force){if(!cfg.token)return;if(!force&&Date.now()-lastTry<8000)return;schedule(300)}
+function setSt(s,msg){ss={s,msg:msg||''};renderBadge();if(tab==='syn')updSyn()}
+function ago(t){const x=(Date.now()-t)/1000;return x<10?'just now':x<60?Math.floor(x)+' sec ago':x<3600?Math.floor(x/60)+' min ago':x<86400?Math.floor(x/3600)+' h ago':Math.floor(x/86400)+' days ago'}
+function renderBadge(){const b=$('#syncBadge');let c='bad',t,tip='';
+ if(!cfg.token){t='Not connected';tip='Tap to set up sync'}
+ else if(ss.s==='busy'){t='Syncing…';c='busy'}
+ else if(ss.s==='ok'&&!cfg.pend){t='Synced · '+ago(cfg.last);c='ok';tip='This device and GitHub have the same data'}
+ else{t=cfg.pend?`Not synced · ${cfg.pend} change${cfg.pend>1?'s':''} waiting`:'Not synced';tip=ss.msg||'Tap for details'}
+ b.className='badge '+c;b.textContent=t;b.title=tip}
+function rSyn(){const f=(id,l,x='')=>`<div><label>${l}</label><input id="${id}" ${x} autocomplete="off" autocapitalize="none" spellcheck="false"></div>`;
+ $('#syn').innerHTML=`<div class="card" style="max-width:760px"><h2>Sync status</h2><div id="sStat"></div><div class="row" id="sBtns" style="margin-top:10px"><button class="btn" data-a="sNow">Sync now</button><button class="btn dg" data-a="sOff">Disconnect this device</button></div></div>
+ <div class="card" id="sForm" style="max-width:760px"><h2>Connect this device to GitHub</h2><div class="fg">${f('sOwner','GitHub username',`value="${esc(cfg.owner||'')}"`)}${f('sRepo','Private data folder name',`value="${esc(cfg.repo||'expense-data')}"`)}${f('sTok','Access key (token)','type="password"')}${f('sPass','Passphrase (12+ characters for a new folder)','type="password"')}${f('sPass2','Repeat passphrase (first device only)','type="password"')}</div>
+ <p class="hint">First device: type the passphrase twice. Every other device: type the same passphrase once. If this device already has data, it is merged with what is in GitHub, nothing is overwritten. Your data is encrypted on this device before it is uploaded. The key and passphrase are remembered on this device only.</p><p id="sErr" role="alert" style="color:var(--dg);min-height:1.4em"></p><button class="btn" data-a="sGo">Connect and sync</button></div>`;updSyn()}
+function updSyn(){const on=!!cfg.token,f=$('#sForm');if(!f)return;f.style.display=on?'none':'';$('#sBtns').style.display=on?'':'none';
+ $('#sStat').innerHTML=on?`<p><b>Connected</b> to ${esc(cfg.owner)}/${esc(cfg.repo)}.</p><p>Last successful sync: ${cfg.last?esc(new Date(cfg.last).toLocaleString()):'never'}. Changes waiting: ${cfg.pend||0}.</p>${ss.s==='err'?`<p style="color:var(--dg)"><b>Problem:</b> ${esc(ss.msg)}</p>`:''}<p class="hint">Syncs when you open the app, when you switch back to it, and a few seconds after you save something.</p>`:'<p>This device is <b>not connected</b>. Your data is saved only in this browser. Fill in the form below to connect.</p>'}
+function ask(msg,yes,label){$('#mMsg').textContent=msg;$('#mYes').textContent=label||'Yes, delete';$('#modal').classList.add('on');$('#mYes').onclick=()=>{$('#modal').classList.remove('on');yes()};$('#mNo').onclick=()=>$('#modal').classList.remove('on')}
+A.sNow=()=>schedule(0);
+A.sOff=()=>ask('Disconnect this device? Your data stays on this device and in GitHub.',()=>{Object.assign(cfg,{token:'',pass:'',salt:'',it:0,shas:{},dirty:[],pend:0,last:0});KEY=null;saveCfg();setSt('off');updSyn();toast('Disconnected')},'Yes, disconnect');
+A.sGo=async()=>{const owner=$('#sOwner').value.trim(),repo=$('#sRepo').value.trim(),token=$('#sTok').value.trim(),pass=$('#sPass').value,pass2=$('#sPass2').value;
+ if(!owner||!repo||!token||!pass)return toast('Fill in all the fields');
+ if(pass.length<8)return toast('Use a passphrase of at least 8 characters');
+ if(!(window.crypto&&crypto.subtle))return toast('Encryption is not available here (the page must be opened over https)');
+ const old=cfg;cfg=Object.assign({},old,{owner,repo,token,shas:{},dirty:[]});$('#sErr').textContent='';setSt('busy');
+ try{const pr=await api('');if(!pr.ok)throw await apiErr(pr);
+  if(!(await pr.json()).private)throw new Error('This folder is public. Make it private in its GitHub settings first.');
+  let salt,it;const mr=await api('/contents/meta.json',{headers:RAW});
+  if(mr.ok){const m=JSON.parse(await mr.text());salt=m.salt;it=m.it||250000;KEY=await deriveKey(pass,unb64(salt),it);try{await decJ(m.check)}catch(e){KEY=null;throw new Error('Wrong passphrase for this data folder')}}
+  else if(mr.status===404){if(pass!==pass2)throw new Error('First time: type the same passphrase in both boxes');
+   if(pass.length<12)throw new Error('For a new data folder, use a passphrase of at least 12 characters');it=600000;const sb=crypto.getRandomValues(new Uint8Array(16));salt=b64(sb);KEY=await deriveKey(pass,sb,it);
+   const meta=JSON.stringify({v:1,salt,it,check:await encJ({ok:1})}),pu=await api('/contents/meta.json',{method:'PUT',body:JSON.stringify({message:'setup',content:b64(TE.encode(meta))})});
+   if(!pu.ok)throw await apiErr(pu)}
+  else throw await apiErr(mr);
+  Object.assign(cfg,{pass,salt,it,dirty:allFiles(),pend:0,last:0});saveCfg();
+  ['#sPass','#sPass2','#sTok'].forEach(i=>$(i).value='');toast('Connected');updSyn();sync()
+ }catch(e){cfg=old;KEY=null;const msg=e instanceof TypeError?netMsg():e.message;$('#sErr').textContent=msg;setSt(cfg.token?'err':'off',msg)}};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)trigger()});
+addEventListener('focus',()=>trigger());addEventListener('online',()=>trigger(true));
+renderBadge();setInterval(renderBadge,30000);
+const R={grp:rGrp,itm:rItm,log:rLog,rec:rRec,syn:rSyn};
+function render(){$$('[data-a=tab]').forEach(b=>b.classList.toggle('on',b.dataset.v===tab));$$('section').forEach(s=>s.classList.toggle('on',s.id===tab));R[tab]()}
+A.tab=v=>{tab=v;render();scrollTo(0,0)};
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
+function applyTheme(){const d=isDark();$('#themeBtn').innerHTML=ic(d?'sun':'moon');$('#themeBtn').title=d?'Switch to light theme':'Switch to dark theme';let m=$('meta[name=theme-color]');if(m)m.content=d?'#171f1b':'#ffffff'}
+A.theme=()=>{const d=document.documentElement;d.dataset.theme=isDark()?'light':'dark';try{localStorage.setItem('xt-theme',d.dataset.theme)}catch(e){}applyTheme()};
+try{const t=localStorage.getItem('xt-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+try{matchMedia('(prefers-color-scheme:dark)').addEventListener('change',applyTheme)}catch(e){}
+applyTheme();
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(t&&A[t.dataset.a])A[t.dataset.a](t.dataset.v,t)});
+document.addEventListener('change',e=>{const t=e.target.closest('[data-c]');if(t&&C[t.dataset.c])C[t.dataset.c](t.value,t)});
+document.addEventListener('input',e=>{if(e.target.closest('#lf'))lPrev();if(e.target.id==='iS')$('#iT').innerHTML=iRows()});
+render();
+if(cfg.token)schedule();
+
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
